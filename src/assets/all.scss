@@ -1,0 +1,24 @@
+// 1. 引入 Bootstrap 的 functions（讓變數可以使用 BS 內建函式）
+@import "bootstrap/scss/functions";
+
+// 覆寫原有顏色，放在 Bootstrap 變數之前
+$primary: #F59E0B;
+$secondary: #D97706;
+
+// 2. 引入 Bootstrap 原始變數（讓自訂變數可以引用 $gray-600、$green 等）
+@import "bootstrap/scss/variables";
+
+// 保留原有顏色，新增 tertiary
+$theme-colors: map-merge($theme-colors,
+    ("tertiary": #FBBF24,
+      "neutral": #0F1014,
+      "white": #ffffff,
+    ));
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+
+// 3. 引入你自訂的變數（在 BS 主體之前覆寫）
+@import "./variables";
+
+// 4. 最後引入 Bootstrap 主體
+@import "bootstrap/scss/bootstrap";
