@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "preview": "vite preview",
     "format": "prettier --write --experimental-cli src/"
   },
   "dependencies": {
     "axios": "^1.20.0",
     "bootstrap": "^5.3.8",
+    "gh-pages": "^6.3.0",
     "pinia": "^4.0.3",
     "vue": "^3.5.42",
     "vue-axios": "^3.6.0",
