@@ -15,22 +15,6 @@ function mergeCartItems(cart) {
   const mergeCartItems = [];
   const test = filterCart.find((item) => item.id === item.id);
   console.log(test); // { id: 1, name: '鍵盤', price: 1200, quantity: 1 }
-
-  // for (let i = 0; i < duplicateFilterCart.length; i++) {
-  //   let j = 1;
-  //   // 要一次找到所有同樣的 id
-  //   if (duplicateFilterCart[ i ].id === duplicateFilterCart[ j ].id) {
-  //     mergeCartItems.push({ id: duplicateFilterCart[ i ].id, name: duplicateFilterCart[ i ], price: (duplicateFilterCart[ i ].quantity + duplicateFilterCart[ j ].quantity) * duplicateFilterCart[ i ].price, quantity: duplicateFilterCart[ i ] + duplicateFilterCart[ j ] });
-  //     duplicateFilterCart.splice(j, 1);
-  //     let num = 1;
-  //     console.log(num, duplicateFilterCart);
-  //     console.log('merge:', mergeCartItems);
-  //     num += 1;
-  //   }
-  //   else {
-  //     j++;
-  //   }
-  // }
 };
 
 mergeCartItems(cart);
