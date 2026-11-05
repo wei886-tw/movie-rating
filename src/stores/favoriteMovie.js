@@ -17,6 +17,9 @@ export const favoriteStore = defineStore('favorite', {
           id: movie.id,
           title: movie.title,
           poster_path: movie.poster_path,
+          backdrop_path: movie.backdrop_path,
+          genre_ids: movie.genre_ids,
+
         });
         console.log('favoriteList:', this.favoriteList);
         alert("已加入收藏清單");
@@ -27,6 +30,10 @@ export const favoriteStore = defineStore('favorite', {
 
       }
       localStorage.setItem('favorite', JSON.stringify(this.favoriteList));
+    },
+
+    toggleWatchList(movie){
+      const index = this.watchList
     }
   }
 });

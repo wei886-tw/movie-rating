@@ -34,8 +34,8 @@
 
           <!-- 加入收藏 -->
           <div>
-            <button class="btn btn-white  btn-play me-16" @click="toggleFavorite(movie)">加入收藏</button>
-            <button class="btn btn-white btn-play">加入想看清單</button>
+            <button class="btn btn-white  btn-play me-16" @click="toggleFavorite(homepageBanner)">加入收藏</button>
+            <button class="btn btn-white btn-play" @click="toggleWatchList(homepageBanner)">加入想看清單</button>
           </div>
 
         </div>
@@ -68,9 +68,11 @@
 <script>
 import { errorMessages } from 'vue/compiler-sfc';
 import NavbarView from '../components/NavbarView.vue';
-import { favoriteStore } from '@/stores/favorite.js';
 import { mapActions } from 'pinia';
 import { mapState } from 'pinia';
+import { favoriteStore } from '@/stores/favoriteMovie.js';
+import { wantToWatchStore } from '@/stores/wantToWatchMovie.js';
+
 
 export default {
   components: { NavbarView, favoriteStore },
@@ -94,6 +96,8 @@ export default {
 
   methods: {
     ...mapActions(favoriteStore, [ 'toggleFavorite' ]),
+    ...mapActions(wantToWatchStore, [ 'toggleWatchList' ]),
+
 
     async fetchMovies() {
       const url = `https://api.themoviedb.org/3/movie/popular`;
