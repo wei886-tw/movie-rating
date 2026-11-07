@@ -54,8 +54,9 @@
             <div class="ps-8 pt-8">
               <p>{{ movie.title }}</p>
               <p>{{ movie.genre_ids }}</p>
+              <!-- Todo： 還沒優花化 ui -->
               <button class="btn btn-white me-16" @click="toggleFavorite">加入收藏</button>
-              <button class="btn btn-white">加入想看清單</button>
+              <button class="btn btn-white" @click="toggleWatchList">加入想看清單</button>
             </div>
           </div>
         </li>
@@ -66,12 +67,15 @@
 </template>
 
 <script>
+import OpenCC from 'opencc-js';
 import { errorMessages } from 'vue/compiler-sfc';
 import NavbarView from '../components/NavbarView.vue';
 import { mapActions } from 'pinia';
 import { mapState } from 'pinia';
 import { favoriteStore } from '@/stores/favoriteMovie.js';
 import { wantToWatchStore } from '@/stores/wantToWatchMovie.js';
+
+const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
 
 
 export default {
@@ -106,13 +110,15 @@ export default {
           .then(([ zhRes, enRes ]) => {
             this.movies = zhRes.data.results.map((zhMovie) => {
               const enMovie = enRes.data.results.find((enMovie) => enMovie.id === zhMovie.id);
+
               return {
                 ...zhMovie,
                 titleZh: zhMovie.title,
-                titleEn: enMovie ? enMovie.title : zhMovie.original_title
+                titleEn: enMovie ? enMovie.title : zhMovie.original_title,
+                // genre_ids: 
               };
             });
-            console.log('movies:', this.movies);
+            // console.log('movies:', this.movies);
             this.fetchHomepageBanner();
           });
       }
@@ -143,10 +149,24 @@ export default {
     },
 
     fetchMoviesGenre() {
-      this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers })
+      this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } })
         .then((res) => {
-          console.log('genres:', res.data.genres);
-          this.moviesGenreList = res.data.genres;
+          this.moviesGenreList = res.data.genres.map((genre) => ({
+            ...genre,
+            name: converter(genre.name),
+          }));
+
+          const chineseGenre = [];
+          this.homepageBanner.genre_ids.forEach((id) => {
+            Object.entries(this.moviesGenreList).find(([ key, val ]) => {
+              if (id === val.id) {
+                chineseGenre.push(val.name);
+              }
+            }
+            );
+          });
+
+          console.log(chineseGenre);
         });
     },
 
