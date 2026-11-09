@@ -17,7 +17,7 @@
           <div class="mb-60">
             <div class="border border-dark rounded rounded-4 d-flex fs-24 align-items-center text-white ps-16"
               style="width: 15%; background-color: #292A2E;">
-              <img src="../../public/star.png" class="text-white me-8" alt="星星">
+              <img src="/star.png" class="text-white me-8" alt="星星">
               <p class="me-8 mb-0 fs-24">{{ Math.floor(homepageBanner.vote_average * 10) / 10 }} / 10</p>
             </div>
           </div>
@@ -120,6 +120,7 @@ export default {
             });
             // console.log('movies:', this.movies);
             this.fetchHomepageBanner();
+            this.fetchMoviesGenre();
           });
       }
 
@@ -204,7 +205,6 @@ export default {
 
   mounted() {
     this.fetchMovies();
-    this.fetchMoviesGenre();
   }
 };
 </script>
