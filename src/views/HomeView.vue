@@ -52,9 +52,12 @@
           <div class="card  border-0 "><img :src='`https://image.tmdb.org/t/p/w500${movie.poster_path}`' alt="電影庫"
               class="object-fit-cover" style="height: 460px">
             <div class="ps-8 pt-8">
-              <p>{{ movie.title }}</p>
-              <p>{{ movie.genre_ids }}</p>
-              <!-- Todo： 還沒優花化 ui -->
+              <p class="px-10 fs-20 font-noto-serif-tc fw-bold">{{ movie.title }}</p>
+              <ul class="d-flex list-unstyled px-12">
+                <li v-for="(genre, index) in movie.twGenre" :key="index + 1"> {{ genre }}<span
+                    v-if="index < movie.twGenre.length - 1">、</span></li>
+              </ul>
+              <!-- Todo： 還沒優化 ui -->
               <button class="btn btn-white me-16" @click="toggleFavorite">加入收藏</button>
               <button class="btn btn-white" @click="toggleWatchList">加入想看清單</button>
             </div>
@@ -77,6 +80,27 @@ import { wantToWatchStore } from '@/stores/wantToWatchMovie.js';
 
 const converter = OpenCC.Converter({ from: 'cn', to: 'tw' });
 
+const GENRE_ZH_TW_MAP = {
+  28: '動作',
+  12: '冒險',
+  16: '動畫',
+  35: '喜劇',
+  80: '犯罪',
+  99: '紀錄片',
+  18: '劇情',
+  10751: '家庭',
+  14: '奇幻',
+  36: '歷史',
+  27: '恐怖',
+  10402: '音樂',
+  9648: '懸疑',
+  10749: '愛情',
+  878: '科幻',
+  10770: '電視電影',
+  53: '驚悚',
+  10752: '戰爭',
+  37: '西部',
+};
 
 export default {
   components: { NavbarView, favoriteStore },
@@ -95,6 +119,7 @@ export default {
       moviesChineseGenres: [],
       isExpand: false,
       isLoading: true,
+      zhMovies: null,
     };
   },
 
@@ -106,24 +131,31 @@ export default {
     async fetchMovies() {
       const url = `https://api.themoviedb.org/3/movie/popular`;
       try {
-        await Promise.all([ this.axios.get(url, { headers: this.headers, params: { language: 'zh-TW' } }), this.axios.get(url, { headers: this.headers, params: { language: 'en-US' } }) ])
-          .then(([ zhRes, enRes ]) => {
-            this.movies = zhRes.data.results.map((zhMovie) => {
-              const enMovie = enRes.data.results.find((enMovie) => enMovie.id === zhMovie.id);
-
+        await Promise.all([ this.axios.get(url, { headers: this.headers, params: { language: 'zh-TW' } }), this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } }) ])
+          .then((res) => {
+            this.movies = res[ 0 ].data.results;
+            const cnGenre = res[ 1 ].data.genres;
+            console.log('cnGenre:', cnGenre);
+            const entries = Object.entries(GENRE_ZH_TW_MAP);
+            this.movies = this.movies.map((movie) => {
+              const twGenre = [];
+              entries.find((entry) => {
+                movie.genre_ids.forEach((id) => {
+                  if (id == entry[ 0 ]) {
+                    twGenre.push(entry[ 1 ]);
+                  }
+                });
+              });
               return {
-                ...zhMovie,
-                titleZh: zhMovie.title,
-                titleEn: enMovie ? enMovie.title : zhMovie.original_title,
-                // genre_ids: 
+                ...movie,
+                'twGenre': twGenre
               };
             });
-            // console.log('movies:', this.movies);
+
+            console.log('movies:', this.movies);
             this.fetchHomepageBanner();
-            this.fetchMoviesGenre();
           });
       }
-
       catch (err) {
         if (err.response !== undefined) {
           console.log(err.response.data.status_message);
@@ -135,9 +167,7 @@ export default {
         else {
           console.log(err.message);
         }
-      }
-
-      finally {
+      } finally {
         this.isLoading = false;
       }
     },
@@ -147,28 +177,6 @@ export default {
         let randomIndex = Math.floor(Math.random() * this.movies.length);
         this.homepageBanner = this.movies[ randomIndex ];
       }
-    },
-
-    fetchMoviesGenre() {
-      this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } })
-        .then((res) => {
-          this.moviesGenreList = res.data.genres.map((genre) => ({
-            ...genre,
-            name: converter(genre.name),
-          }));
-
-          const chineseGenre = [];
-          this.homepageBanner.genre_ids.forEach((id) => {
-            Object.entries(this.moviesGenreList).find(([ key, val ]) => {
-              if (id === val.id) {
-                chineseGenre.push(val.name);
-              }
-            }
-            );
-          });
-
-          console.log(chineseGenre);
-        });
     },
 
     getGenreNames() {
