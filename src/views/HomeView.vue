@@ -133,25 +133,21 @@ export default {
       try {
         await Promise.all([ this.axios.get(url, { headers: this.headers, params: { language: 'zh-TW' } }), this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } }) ])
           .then((res) => {
-            this.movies = res[ 0 ].data.results;
-            const cnGenre = res[ 1 ].data.genres;
-            console.log('cnGenre:', cnGenre);
-            const entries = Object.entries(GENRE_ZH_TW_MAP);
-            this.movies = this.movies.map((movie) => {
+            this.movies = res[ 0 ].data.results.map((movie) => {
               const twGenre = [];
-              entries.find((entry) => {
-                movie.genre_ids.forEach((id) => {
-                  if (id == entry[ 0 ]) {
-                    twGenre.push(entry[ 1 ]);
-                  }
-                });
+              movie.genre_ids.map((id) => {
+                if (GENRE_ZH_TW_MAP[ id ]) {
+                  twGenre.push(GENRE_ZH_TW_MAP[ id ])
+                }
               });
+
               return {
                 ...movie,
                 'twGenre': twGenre
               };
             });
 
+            const cnGenre = res[ 1 ].data.genres;
             console.log('movies:', this.movies);
             this.fetchHomepageBanner();
           });
@@ -179,10 +175,6 @@ export default {
       }
     },
 
-    getGenreNames() {
-      // this.moviesChineseGenres = this.moviesGenreList.map(());
-      console.log();
-    },
 
     toggleExpand() {
       if (this.isExpand === false) {
