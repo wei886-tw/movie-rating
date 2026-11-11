@@ -2,8 +2,10 @@
   <NavbarView />
   <div class="container-fluid bg-neutral">
     <!-- banner -->
-    <div class="d-flex justify-content-center"></div>
-    <div class="spinner-border text-dark" v-if="isLoading"></div>
+    <div class="d-flex justify-content-center align-items-center vh-100" v-if="isLoading">
+      <div class="spinner-border text-white" style="width: 10rem; height: 10rem;"></div>
+    </div>
+
     <div class="container-fluid mb-96" v-else>
       <section class="banner" :style="bannerStyle">
         <!--todo: pt-auto -->
@@ -25,23 +27,23 @@
           <!-- 電影介紹 -->
           <div class="mb-32" style="width: 40%;">
             <p class="fs-24 text-white line-clamp-10" :class="{ 'line-clamp-10': !isExpand }">{{
-              homepageBanner.overview }}</p>
+              homepageBanner.overview || '目前沒有簡介' }}</p>
 
             <button class="btn btn-link  p-0 text-white" @click="toggleExpand">
               {{ isExpand ? '收合' : '更多' }}
             </button>
           </div>
-
+          <!-- 電影介紹結束 -->
           <!-- 加入收藏 -->
           <div>
             <button class="btn btn-white  btn-play me-16" @click="toggleFavorite(homepageBanner)">加入收藏</button>
             <button class="btn btn-white btn-play" @click="toggleWatchList(homepageBanner)">加入想看清單</button>
           </div>
-
+          <!-- 加入收藏結束 -->
         </div>
       </section>
-
     </div>
+
     <!-- 熱門電影卡片推薦 -->
     <div class="container w-100">
       <h3 class="fs-48 text-white mb-24 font-noto-serif-tc">
@@ -58,8 +60,8 @@
                     v-if="index < movie.twGenre.length - 1">、</span></li>
               </ul>
               <!-- Todo： 還沒優化 ui -->
-              <button class="btn btn-white me-16" @click="toggleFavorite">加入收藏</button>
-              <button class="btn btn-white" @click="toggleWatchList">加入想看清單</button>
+              <button class="btn btn-dark me-16 mt-16 mb-16" @click="toggleFavorite">加入收藏</button>
+              <button class="btn btn-dark mt-16 mb-16" @click="toggleWatchList">加入想看清單</button>
             </div>
           </div>
         </li>
@@ -119,7 +121,6 @@ export default {
       moviesChineseGenres: [],
       isExpand: false,
       isLoading: true,
-      zhMovies: null,
     };
   },
 
@@ -127,31 +128,30 @@ export default {
     ...mapActions(favoriteStore, [ 'toggleFavorite' ]),
     ...mapActions(wantToWatchStore, [ 'toggleWatchList' ]),
 
-
     async fetchMovies() {
       const url = `https://api.themoviedb.org/3/movie/popular`;
       try {
-        await Promise.all([ this.axios.get(url, { headers: this.headers, params: { language: 'zh-TW' } }), this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } }) ])
-          .then((res) => {
-            this.movies = res[ 0 ].data.results.map((movie) => {
-              const twGenre = [];
-              movie.genre_ids.map((id) => {
-                if (GENRE_ZH_TW_MAP[ id ]) {
-                  twGenre.push(GENRE_ZH_TW_MAP[ id ])
-                }
-              });
+        const res = await Promise.all([ this.axios.get(url, { headers: this.headers, params: { language: 'zh-TW' } }), this.axios.get("https://api.themoviedb.org/3/genre/movie/list", { headers: this.headers, params: { language: 'zh-TW' } }) ]);
 
-              return {
-                ...movie,
-                'twGenre': twGenre
-              };
-            });
-
-            const cnGenre = res[ 1 ].data.genres;
-            console.log('movies:', this.movies);
-            this.fetchHomepageBanner();
+        this.movies = res[ 0 ].data.results.map((movie) => {
+          const twGenre = [];
+          movie.genre_ids.forEach((id) => {
+            if (GENRE_ZH_TW_MAP[ id ]) {
+              twGenre.push(GENRE_ZH_TW_MAP[ id ]);
+            }
           });
+
+          return {
+            ...movie,
+            'twGenre': twGenre
+          };
+        });
+
+        const cnGenre = res[ 1 ].data.genres;
+        console.log('movies:', this.movies);
+        this.fetchHomepageBanner();
       }
+
       catch (err) {
         if (err.response !== undefined) {
           console.log(err.response.data.status_message);
@@ -163,7 +163,9 @@ export default {
         else {
           console.log(err.message);
         }
-      } finally {
+      }
+
+      finally {
         this.isLoading = false;
       }
     },
@@ -172,6 +174,7 @@ export default {
       if (this.movies.length > 0) {
         let randomIndex = Math.floor(Math.random() * this.movies.length);
         this.homepageBanner = this.movies[ randomIndex ];
+        console.log('banner:', this.homepageBanner);
       }
     },
 
@@ -195,11 +198,12 @@ export default {
       if (this.homepageBanner === null) {
         return {};
       }
-
-      return {
-        backgroundImage: `linear-gradient(to right, #0f1014 0%, transparent 80%),
-        linear-gradient(to top, #0f1014 0%, transparent 70%),url('https://image.tmdb.org/t/p/w1280/${this.homepageBanner.backdrop_path}')`
-      };
+      else {
+        return {
+          backgroundImage: `linear-gradient(to right, #0f1014 0%, transparent 80%),
+        linear-gradient(to top, #0f1014 0%, transparent 70%),url('https://image.tmdb.org/t/p/w1280${this.homepageBanner.backdrop_path}')`
+        };
+      }
     },
   },
 
